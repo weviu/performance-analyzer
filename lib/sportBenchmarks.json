@@ -1,0 +1,257 @@
+{
+  "Alpine Skiing": {
+    "avgHeight": 173.5,
+    "avgWeight": 72.1,
+    "sampleSize": 6340
+  },
+  "Archery": {
+    "avgHeight": 173.3,
+    "avgWeight": 70,
+    "sampleSize": 1884
+  },
+  "Athletics": {
+    "avgHeight": 176.3,
+    "avgWeight": 69.3,
+    "sampleSize": 32568
+  },
+  "Badminton": {
+    "avgHeight": 174.2,
+    "avgWeight": 68.2,
+    "sampleSize": 1362
+  },
+  "Baseball": {
+    "avgHeight": 182.6,
+    "avgWeight": 85.7,
+    "sampleSize": 846
+  },
+  "Basketball": {
+    "avgHeight": 191.2,
+    "avgWeight": 85.8,
+    "sampleSize": 3675
+  },
+  "Beach Volleyball": {
+    "avgHeight": 186.2,
+    "avgWeight": 79.1,
+    "sampleSize": 538
+  },
+  "Biathlon": {
+    "avgHeight": 174.1,
+    "avgWeight": 66.6,
+    "sampleSize": 4615
+  },
+  "Bobsleigh": {
+    "avgHeight": 181.6,
+    "avgWeight": 89.2,
+    "sampleSize": 2206
+  },
+  "Boxing": {
+    "avgHeight": 172.8,
+    "avgWeight": 65.2,
+    "sampleSize": 4425
+  },
+  "Canoeing": {
+    "avgHeight": 178.6,
+    "avgWeight": 76.5,
+    "sampleSize": 5550
+  },
+  "Cross Country Skiing": {
+    "avgHeight": 173.3,
+    "avgWeight": 65.9,
+    "sampleSize": 7535
+  },
+  "Curling": {
+    "avgHeight": 174.2,
+    "avgWeight": 72.1,
+    "sampleSize": 410
+  },
+  "Cycling": {
+    "avgHeight": 176.2,
+    "avgWeight": 70.1,
+    "sampleSize": 7819
+  },
+  "Diving": {
+    "avgHeight": 166.7,
+    "avgWeight": 60.6,
+    "sampleSize": 2013
+  },
+  "Equestrianism": {
+    "avgHeight": 174.4,
+    "avgWeight": 67.8,
+    "sampleSize": 4553
+  },
+  "Fencing": {
+    "avgHeight": 177.3,
+    "avgWeight": 71.4,
+    "sampleSize": 6540
+  },
+  "Figure Skating": {
+    "avgHeight": 168.1,
+    "avgWeight": 59.5,
+    "sampleSize": 1512
+  },
+  "Football": {
+    "avgHeight": 175.4,
+    "avgWeight": 70.4,
+    "sampleSize": 4532
+  },
+  "Freestyle Skiing": {
+    "avgHeight": 170.9,
+    "avgWeight": 67,
+    "sampleSize": 913
+  },
+  "Golf": {
+    "avgHeight": 174,
+    "avgWeight": 71.2,
+    "sampleSize": 108
+  },
+  "Gymnastics": {
+    "avgHeight": 162.9,
+    "avgWeight": 56.9,
+    "sampleSize": 18326
+  },
+  "Handball": {
+    "avgHeight": 183.4,
+    "avgWeight": 81.5,
+    "sampleSize": 3335
+  },
+  "Hockey": {
+    "avgHeight": 173.4,
+    "avgWeight": 69.2,
+    "sampleSize": 4264
+  },
+  "Ice Hockey": {
+    "avgHeight": 178.9,
+    "avgWeight": 80.8,
+    "sampleSize": 4579
+  },
+  "Judo": {
+    "avgHeight": 174.2,
+    "avgWeight": 78.8,
+    "sampleSize": 3384
+  },
+  "Luge": {
+    "avgHeight": 176.7,
+    "avgWeight": 77.3,
+    "sampleSize": 1377
+  },
+  "Modern Pentathlon": {
+    "avgHeight": 178.1,
+    "avgWeight": 70.3,
+    "sampleSize": 1261
+  },
+  "Nordic Combined": {
+    "avgHeight": 176.5,
+    "avgWeight": 66.9,
+    "sampleSize": 1066
+  },
+  "Rhythmic Gymnastics": {
+    "avgHeight": 167.8,
+    "avgWeight": 48.8,
+    "sampleSize": 615
+  },
+  "Rowing": {
+    "avgHeight": 184.3,
+    "avgWeight": 80.2,
+    "sampleSize": 7794
+  },
+  "Rugby Sevens": {
+    "avgHeight": 175.4,
+    "avgWeight": 79,
+    "sampleSize": 297
+  },
+  "Sailing": {
+    "avgHeight": 178.3,
+    "avgWeight": 76,
+    "sampleSize": 4868
+  },
+  "Shooting": {
+    "avgHeight": 173.5,
+    "avgWeight": 74,
+    "sampleSize": 7299
+  },
+  "Short Track Speed Skating": {
+    "avgHeight": 170.1,
+    "avgWeight": 64.3,
+    "sampleSize": 1488
+  },
+  "Skeleton": {
+    "avgHeight": 176.2,
+    "avgWeight": 74.2,
+    "sampleSize": 174
+  },
+  "Ski Jumping": {
+    "avgHeight": 176.5,
+    "avgWeight": 65.1,
+    "sampleSize": 1968
+  },
+  "Snowboarding": {
+    "avgHeight": 173,
+    "avgWeight": 69.5,
+    "sampleSize": 924
+  },
+  "Softball": {
+    "avgHeight": 169.4,
+    "avgWeight": 67.5,
+    "sampleSize": 441
+  },
+  "Speed Skating": {
+    "avgHeight": 174.1,
+    "avgWeight": 70,
+    "sampleSize": 4405
+  },
+  "Swimming": {
+    "avgHeight": 178.6,
+    "avgWeight": 70.6,
+    "sampleSize": 18796
+  },
+  "Synchronized Swimming": {
+    "avgHeight": 168.5,
+    "avgWeight": 55.9,
+    "sampleSize": 849
+  },
+  "Table Tennis": {
+    "avgHeight": 171.3,
+    "avgWeight": 64.9,
+    "sampleSize": 1789
+  },
+  "Taekwondo": {
+    "avgHeight": 176.8,
+    "avgWeight": 68.1,
+    "sampleSize": 596
+  },
+  "Tennis": {
+    "avgHeight": 178.9,
+    "avgWeight": 70.8,
+    "sampleSize": 2008
+  },
+  "Trampolining": {
+    "avgHeight": 166.6,
+    "avgWeight": 59.3,
+    "sampleSize": 149
+  },
+  "Triathlon": {
+    "avgHeight": 173.6,
+    "avgWeight": 61.8,
+    "sampleSize": 526
+  },
+  "Volleyball": {
+    "avgHeight": 187,
+    "avgWeight": 78.9,
+    "sampleSize": 3277
+  },
+  "Water Polo": {
+    "avgHeight": 185,
+    "avgWeight": 84.6,
+    "sampleSize": 2724
+  },
+  "Weightlifting": {
+    "avgHeight": 167.8,
+    "avgWeight": 79.5,
+    "sampleSize": 3001
+  },
+  "Wrestling": {
+    "avgHeight": 172.4,
+    "avgWeight": 75.5,
+    "sampleSize": 5246
+  }
+}
