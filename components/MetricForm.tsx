@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { AthleteMetrics } from "@/types";
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -9,13 +8,11 @@ interface Props {
   isLoading: boolean;
 }
 
-const defaultMetrics: AthleteMetrics & { season: string } = {
+const defaultMetrics = {
   age: 25,
   sex: "M",
   height: 175,
   weight: 75,
-  sprintTime: 5.5,
-  verticalJump: 50,
   season: "Summer",
 };
 
@@ -148,7 +145,7 @@ const sectionTitleStyle: React.CSSProperties = {
 };
 
 export default function MetricForm({ onSubmit, isLoading }: Props) {
-  const [metrics, setMetrics] = useState<AthleteMetrics & { season: string }>(defaultMetrics);
+  const [metrics, setMetrics] = useState(defaultMetrics);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = e.target;
@@ -203,19 +200,6 @@ export default function MetricForm({ onSubmit, isLoading }: Props) {
           </Field>
           <Field label="Weight" unit="kg">
             <input type="number" name="weight" value={metrics.weight} onChange={handleChange} min={30} max={200} required {...fieldProps} />
-          </Field>
-        </div>
-      </div>
-
-      {/* Power & Speed */}
-      <div style={sectionStyle}>
-        <p style={sectionTitleStyle}>Power &amp; Speed</p>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
-          <Field label="30-Meter Sprint" unit="sec">
-            <input type="number" name="sprintTime" value={metrics.sprintTime} onChange={handleChange} min={3} max={15} step={0.01} required {...fieldProps} />
-          </Field>
-          <Field label="Vertical Jump" unit="cm">
-            <input type="number" name="verticalJump" value={metrics.verticalJump} onChange={handleChange} min={10} max={120} required {...fieldProps} />
           </Field>
         </div>
       </div>
