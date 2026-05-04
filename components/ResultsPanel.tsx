@@ -7,11 +7,11 @@ interface Props {
 }
 
 const rankColors = ["var(--accent)", "#7a8ba8", "#a07850"];
-const rankBg = ["rgba(0,240,160,0.1)", "rgba(122,139,168,0.1)", "rgba(160,120,80,0.1)"];
+const rankBg = ["rgba(74,158,255,0.1)", "rgba(122,139,168,0.1)", "rgba(160,120,80,0.1)"];
 
 function diffColor(diff: number): string {
   const abs = Math.abs(diff);
-  if (abs <= 5) return "#00f0a0";
+  if (abs <= 5) return "#4a9eff";
   if (abs <= 15) return "#f0c040";
   return "#f05050";
 }
@@ -124,7 +124,7 @@ export default function ResultsPanel({ result }: Props) {
               fontWeight: 700,
               fontSize: "0.8rem",
               letterSpacing: "0.05em",
-              background: i === 0 ? "rgba(0,240,160,0.15)" : "rgba(255,255,255,0.05)",
+              background: i === 0 ? "rgba(74,158,255,0.15)" : "rgba(255,255,255,0.05)",
               color: i === 0 ? "var(--accent)" : "var(--text-secondary)",
               padding: "0.25rem 0.75rem",
               borderRadius: "999px",

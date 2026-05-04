@@ -16,6 +16,8 @@ const defaultMetrics = {
   season: "Summer",
 };
 
+type MetricField = keyof typeof defaultMetrics;
+
 const inputStyle: React.CSSProperties = {
   background: "var(--bg-secondary)",
   border: "1px solid var(--border)",
@@ -149,9 +151,22 @@ export default function MetricForm({ onSubmit, isLoading }: Props) {
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = e.target;
+    const field = name as MetricField;
+
+    if (e.target.type === "number") {
+      const numericValue = (e.target as HTMLInputElement).valueAsNumber;
+
+      setMetrics((prev) => ({
+        ...prev,
+        [field]: Number.isNaN(numericValue) ? prev[field] : numericValue,
+      }));
+
+      return;
+    }
+
     setMetrics((prev) => ({
       ...prev,
-      [name]: e.target.type === "number" ? parseFloat(value) : value,
+      [field]: value,
     }));
   }
 
