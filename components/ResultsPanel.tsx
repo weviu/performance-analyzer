@@ -1,18 +1,25 @@
 "use client";
 
-import { FastAPIResult } from "@/types";
+import { PredictionResult } from "@/types";
 
 interface Props {
-  result: FastAPIResult;
+  result: PredictionResult;
 }
 
 const rankColors = ["var(--accent)", "#7a8ba8", "#a07850"];
 const rankBg = ["rgba(0,240,160,0.1)", "rgba(122,139,168,0.1)", "rgba(160,120,80,0.1)"];
 
+function diffColor(diff: number): string {
+  const abs = Math.abs(diff);
+  if (abs <= 5) return "#00f0a0";
+  if (abs <= 15) return "#f0c040";
+  return "#f05050";
+}
+
 export default function ResultsPanel({ result }: Props) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      {/* Predicted Sport card */}
+      {/* Sport Group Banner */}
       <div
         style={{
           background: "var(--bg-card)",
@@ -29,16 +36,16 @@ export default function ResultsPanel({ result }: Props) {
             letterSpacing: "0.12em",
             textTransform: "uppercase",
             color: "var(--text-secondary)",
-            marginBottom: "0.5rem",
+            marginBottom: "0.4rem",
           }}
         >
-          Predicted Sport
+          Your Sport Category
         </p>
         <p
           style={{
             fontFamily: "var(--font-barlow-condensed)",
             fontWeight: 800,
-            fontSize: "2rem",
+            fontSize: "2.2rem",
             letterSpacing: "0.06em",
             textTransform: "uppercase",
             color: "var(--accent)",
@@ -46,12 +53,111 @@ export default function ResultsPanel({ result }: Props) {
             lineHeight: 1.1,
           }}
         >
-          {result.predicted_sport}
+          {result.sport_group}
+        </p>
+
+        {/* Confidence bar */}
+        <div style={{ marginTop: "0.75rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.3rem" }}>
+            <span
+              style={{
+                fontFamily: "var(--font-barlow-condensed)",
+                fontSize: "0.75rem",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "var(--text-secondary)",
+              }}
+            >
+              Confidence
+            </span>
+            <span
+              style={{
+                fontFamily: "var(--font-barlow-condensed)",
+                fontWeight: 700,
+                fontSize: "0.9rem",
+                color: "var(--accent)",
+              }}
+            >
+              {result.group_confidence}%
+            </span>
+          </div>
+          <div
+            style={{
+              background: "var(--bg-secondary)",
+              borderRadius: "999px",
+              height: "6px",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                width: `${result.group_confidence}%`,
+                height: "100%",
+                background: "var(--accent)",
+                borderRadius: "999px",
+                transition: "width 0.8s ease",
+              }}
+            />
+          </div>
+        </div>
+
+        <p
+          style={{
+            fontFamily: "var(--font-barlow-condensed)",
+            fontSize: "0.8rem",
+            color: "var(--text-secondary)",
+            marginTop: "0.5rem",
+            marginBottom: 0,
+          }}
+        >
+          Based on your physical profile
         </p>
       </div>
 
-      {/* Top 3 */}
-      {result.top3.map((item, i) => (
+      {/* Top 3 Group Breakdown */}
+      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+        {result.top_groups.map((g, i) => (
+          <span
+            key={g.group}
+            style={{
+              fontFamily: "var(--font-barlow-condensed)",
+              fontWeight: 700,
+              fontSize: "0.8rem",
+              letterSpacing: "0.05em",
+              background: i === 0 ? "rgba(0,240,160,0.15)" : "rgba(255,255,255,0.05)",
+              color: i === 0 ? "var(--accent)" : "var(--text-secondary)",
+              padding: "0.25rem 0.75rem",
+              borderRadius: "999px",
+              border: `1px solid ${i === 0 ? "var(--accent)" : "var(--border)"}`,
+            }}
+          >
+            {g.group} {g.confidence}%
+          </span>
+        ))}
+      </div>
+
+      {/* Individual Sport Matches */}
+      <p
+        style={{
+          fontFamily: "var(--font-barlow-condensed)",
+          fontWeight: 700,
+          fontSize: "0.75rem",
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          color: "var(--text-secondary)",
+          margin: "0.25rem 0 0",
+        }}
+      >
+        Best Sport Matches Within {result.sport_group}
+      </p>
+
+      {result.top3_sports.length === 0 && (
+        <p style={{ color: "var(--text-secondary)", fontFamily: "var(--font-barlow-condensed)" }}>
+          No benchmark data available for this sport group.
+        </p>
+      )}
+
+      {result.top3_sports.map((item, i) => (
         <div
           key={item.sport}
           style={{
@@ -86,7 +192,7 @@ export default function ResultsPanel({ result }: Props) {
                 border: `1px solid ${rankColors[i]}`,
               }}
             >
-              #{i + 1}
+              #{item.rank}
             </span>
             <h3
               style={{
@@ -104,7 +210,7 @@ export default function ResultsPanel({ result }: Props) {
           </div>
 
           {/* Match Score bar */}
-          <div>
+          <div style={{ marginBottom: "0.75rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.3rem" }}>
               <span
                 style={{
@@ -125,7 +231,7 @@ export default function ResultsPanel({ result }: Props) {
                   color: rankColors[i],
                 }}
               >
-                {item.confidence}%
+                {item.match_score}%
               </span>
             </div>
             <div
@@ -138,7 +244,7 @@ export default function ResultsPanel({ result }: Props) {
             >
               <div
                 style={{
-                  width: `${item.confidence}%`,
+                  width: `${item.match_score}%`,
                   height: "100%",
                   background: rankColors[i],
                   borderRadius: "999px",
@@ -146,6 +252,51 @@ export default function ResultsPanel({ result }: Props) {
                 }}
               />
             </div>
+          </div>
+
+          {/* Height stat row */}
+          <div
+            style={{
+              fontFamily: "var(--font-barlow-condensed)",
+              fontSize: "0.82rem",
+              color: "var(--text-secondary)",
+              marginBottom: "0.3rem",
+              display: "flex",
+              gap: "0.5rem",
+              flexWrap: "wrap",
+            }}
+          >
+            <span>Height: Olympic avg {item.avg_height}cm</span>
+            <span
+              style={{
+                color: diffColor(item.height_diff),
+                fontWeight: 700,
+              }}
+            >
+              Diff: {item.height_diff > 0 ? "+" : ""}{item.height_diff}cm
+            </span>
+          </div>
+
+          {/* Weight stat row */}
+          <div
+            style={{
+              fontFamily: "var(--font-barlow-condensed)",
+              fontSize: "0.82rem",
+              color: "var(--text-secondary)",
+              display: "flex",
+              gap: "0.5rem",
+              flexWrap: "wrap",
+            }}
+          >
+            <span>Weight: Olympic avg {item.avg_weight}kg</span>
+            <span
+              style={{
+                color: diffColor(item.weight_diff),
+                fontWeight: 700,
+              }}
+            >
+              Diff: {item.weight_diff > 0 ? "+" : ""}{item.weight_diff}kg
+            </span>
           </div>
         </div>
       ))}

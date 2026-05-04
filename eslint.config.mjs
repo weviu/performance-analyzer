@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Local tooling and generated paths that are not app source:
+    "fastapi/.venv/**",
+    "logs/**",
+    "dev-server.js",
+    "ecosystem.config.cjs",
+    "scripts/processBenchmarks.js",
   ]),
 ]);
 

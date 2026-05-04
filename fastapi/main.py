@@ -1,29 +1,62 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import joblib
+import json
 import numpy as np
 import pandas as pd
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
 
 # ---------------------------------------------------------------------------
+# Sport group → individual sports mapping (Stage 2)
+# ---------------------------------------------------------------------------
+SPORT_GROUPS = {
+    "Ball":       ["Basketball", "Football", "Handball", "Volleyball", "Baseball",
+                   "Softball", "Ice Hockey", "Hockey", "Water Polo", "Rugby",
+                   "Rugby Sevens", "Tennis", "Table Tennis", "Badminton"],
+    "Endurance":  ["Athletics", "Cycling", "Rowing", "Cross Country Skiing",
+                   "Alpine Skiing", "Ski Jumping", "Nordic Combined", "Biathlon",
+                   "Modern Pentathlon", "Triathlon", "Speed Skating",
+                   "Short Track Speed Skating", "Luge", "Bobsleigh", "Skeleton"],
+    "Water":      ["Diving", "Canoeing", "Sailing", "Swimming"],
+    "Combat":     ["Boxing", "Judo", "Wrestling", "Taekwondo", "Fencing"],
+    "Precision":  ["Archery", "Shooting", "Golf"],
+    "Strength":   ["Weightlifting"],
+    "Gymnastics": ["Gymnastics", "Rhythmic Gymnastics", "Trampolining"],
+    "Art":        ["Figure Skating", "Synchronized Swimming"],
+    "Skill":      ["Equestrianism", "Art Competitions"],
+    "Other":      []
+}
+
+# ---------------------------------------------------------------------------
 # Load models once at startup — NOT on every request
 # ---------------------------------------------------------------------------
-MODEL_DIR = "model"
+MODEL_DIR = Path("model")
 
 try:
-    sport_model = joblib.load(os.path.join(MODEL_DIR, "sport_model.pkl"))
-    scaler = joblib.load(os.path.join(MODEL_DIR, "scaler.pkl"))
-    le_sex = joblib.load(os.path.join(MODEL_DIR, "le_sex.pkl"))
-    le_sport = joblib.load(os.path.join(MODEL_DIR, "le_sport.pkl"))
+    sport_model   = joblib.load(MODEL_DIR / "sport_model-4.pkl")
+    label_encoder = joblib.load(MODEL_DIR / "label_encoder.pkl")
+    feature_cols  = joblib.load(MODEL_DIR / "feature_cols.pkl")
 except FileNotFoundError as e:
     raise RuntimeError(
         f"Model file not found: {e}. "
-        "Ensure all .pkl files are present in the model/ directory."
+        "Ensure sport_model-4.pkl, label_encoder.pkl, and feature_cols.pkl are present in model/."
     )
+
+# Load sport benchmarks for Stage 2
+_benchmarks_path = Path("../lib/sportBenchmarks.json")
+if not _benchmarks_path.exists():
+    _benchmarks_path = Path(__file__).parent.parent / "lib" / "sportBenchmarks.json"
+with open(_benchmarks_path, "r") as f:
+    sport_benchmarks = json.load(f)
+
+print("Feature columns:", feature_cols)
+print("Label classes:", label_encoder.classes_)
+print("Models loaded successfully.")
 
 # ---------------------------------------------------------------------------
 # App & CORS
@@ -41,16 +74,92 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 # Request model
 # ---------------------------------------------------------------------------
-VALID_SEX_VALUES = {"M", "F"}
-VALID_SEASON_VALUES = {"Summer", "Winter"}
-
-
 class AthleteInput(BaseModel):
-    height: float   # cm
-    weight: float   # kg
-    age: float      # years
-    sex: str        # "M" or "F"
-    season: str     # "Summer" or "Winter"
+    height: float = Field(..., ge=100, le=250, description="Height in cm")
+    weight: float = Field(..., ge=30,  le=200, description="Weight in kg")
+    age:    float = Field(..., ge=10,  le=80,  description="Age in years")
+    sex:    str   = Field(..., pattern="^(M|F)$", description="M or F")
+    season: str   = Field(..., pattern="^(Summer|Winter)$")
+
+
+# ---------------------------------------------------------------------------
+# Feature engineering
+# ---------------------------------------------------------------------------
+def build_features(input: AthleteInput) -> np.ndarray:
+    sex_enc    = 1 if input.sex == "M" else 0
+    season_enc = 1 if input.season == "Summer" else 0
+    bmi        = input.weight / ((input.height / 100) ** 2)
+    age_group  = float(pd.cut([input.age],    bins=[0, 20, 25, 30, 35, 50],       labels=False)[0])
+    weight_cat = float(pd.cut([input.weight], bins=[0, 60, 70, 80, 90, 100, 200], labels=False)[0])
+    height_sq  = input.height ** 2
+    hw_ratio   = input.height / input.weight
+    power_index      = (input.weight * input.height) / 1000
+    bmi_x_age        = bmi * input.age
+    weight_to_height = input.weight / input.height
+
+    feature_dict = {
+        "Height":           input.height,
+        "Weight":           input.weight,
+        "Age":              input.age,
+        "Sex_enc":          sex_enc,
+        "BMI":              bmi,
+        "Season_enc":       season_enc,
+        "Age_group":        age_group,
+        "Height_sq":        height_sq,
+        "Weight_cat":       weight_cat,
+        "HW_ratio":         hw_ratio,
+        "Power_Index":      power_index,
+        "BMI_x_Age":        bmi_x_age,
+        "Weight_to_Height": weight_to_height,
+    }
+
+    values = [feature_dict[col] for col in feature_cols]
+    return np.array([values])
+
+
+# ---------------------------------------------------------------------------
+# Stage 2 — physics-based sport matching within a group
+# ---------------------------------------------------------------------------
+def match_sports_in_group(group: str, height: float, weight: float) -> list:
+    sports_in_group = SPORT_GROUPS.get(group, [])
+    results = []
+
+    for sport in sports_in_group:
+        if sport not in sport_benchmarks:
+            continue
+
+        bench = sport_benchmarks[sport]
+        avg_h = bench.get("avgHeight")
+        avg_w = bench.get("avgWeight")
+
+        if avg_h is None or avg_w is None:
+            continue
+
+        height_diff = round(height - avg_h, 1)
+        weight_diff = round(weight - avg_w, 1)
+
+        h_score = abs(height_diff) / avg_h
+        w_score = abs(weight_diff) / avg_w
+        distance = (h_score + w_score) / 2
+
+        match_score = round(max(0, 100 - (distance * 200)), 1)
+
+        results.append({
+            "sport":       sport,
+            "match_score": match_score,
+            "avg_height":  avg_h,
+            "avg_weight":  avg_w,
+            "height_diff": height_diff,
+            "weight_diff": weight_diff,
+        })
+
+    results.sort(key=lambda x: x["match_score"], reverse=True)
+    ranked = []
+    for i, r in enumerate(results[:3]):
+        r["rank"] = i + 1
+        ranked.append(r)
+
+    return ranked
 
 
 # ---------------------------------------------------------------------------
@@ -64,70 +173,33 @@ def health():
 @app.post("/predict")
 def predict(input: AthleteInput):
     try:
-        # Validate categorical fields before encoding
-        if input.sex not in VALID_SEX_VALUES:
-            raise ValueError(
-                f"Invalid sex value '{input.sex}'. Must be one of: {VALID_SEX_VALUES}"
-            )
-        if input.season not in VALID_SEASON_VALUES:
-            raise ValueError(
-                f"Invalid season value '{input.season}'. Must be one of: {VALID_SEASON_VALUES}"
-            )
+        # Stage 1 — ML group prediction
+        features    = build_features(input)
+        group_probs  = sport_model.predict_proba(features)[0]
+        group_labels = label_encoder.classes_
+        predicted_idx   = int(group_probs.argmax())
+        predicted_group = group_labels[predicted_idx]
 
-        # Encode sex
-        sex_enc = le_sex.transform([input.sex])[0]
+        top3_idx = group_probs.argsort()[-3:][::-1]
+        top_groups = [
+            {
+                "group":      group_labels[i],
+                "confidence": round(float(group_probs[i]) * 100, 1),
+            }
+            for i in top3_idx
+        ]
 
-        # Compute all derived features (must match training feature_cols exactly)
-        bmi = input.weight / ((input.height / 100) ** 2)
-        season_enc = 1 if input.season == "Summer" else 0
+        # Stage 2 — physics-based sport matching within predicted group
+        top3_sports = match_sports_in_group(predicted_group, input.height, input.weight)
 
-        # Age_group: pd.cut(Age, bins=[0,20,25,30,35,50], labels=False)
-        age_bins = np.array([0, 20, 25, 30, 35, 50])
-        age_group = int(np.clip(np.searchsorted(age_bins[1:], input.age, side="left"), 0, len(age_bins) - 2))
+        return {
+            "sport_group":      predicted_group,
+            "group_confidence": round(float(group_probs[predicted_idx]) * 100, 1),
+            "top_groups":       top_groups,
+            "top3_sports":      top3_sports,
+        }
 
-        height_sq = input.height ** 2
-
-        # Weight_cat: pd.cut(Weight, bins=[0,60,70,80,90,100,200], labels=False)
-        weight_bins = np.array([0, 60, 70, 80, 90, 100, 200])
-        weight_cat = int(np.clip(np.searchsorted(weight_bins[1:], input.weight, side="left"), 0, len(weight_bins) - 2))
-
-        hw_ratio = input.height / input.weight
-
-        # Feature order must match training exactly:
-        # ['Height', 'Weight', 'Age', 'Sex_enc', 'BMI', 'Season_enc', 'Age_group', 'Height_sq', 'Weight_cat', 'HW_ratio']
-        feature_cols = ['Height', 'Weight', 'Age', 'Sex_enc', 'BMI',
-                        'Season_enc', 'Age_group', 'Height_sq', 'Weight_cat', 'HW_ratio']
-        features = pd.DataFrame(
-            [[input.height, input.weight, input.age, sex_enc, bmi,
-              season_enc, age_group, height_sq, weight_cat, hw_ratio]],
-            columns=feature_cols,
-        )
-
-        # Scale and predict
-        features_scaled = scaler.transform(features)
-        prediction_enc = sport_model.predict(features_scaled)[0]
-        sport_name = le_sport.inverse_transform([prediction_enc])[0]
-
-        # Top-3 match scores (temperature-sharpened probabilities, T=0.4)
-        # Sharpening peaks the distribution so scores feel meaningful in the UI.
-        # Ranking is preserved — #1 stays #1. Label as "Match Score", not "Confidence".
-        try:
-            probas = sport_model.predict_proba(features_scaled)[0]
-            classes = le_sport.inverse_transform(range(len(probas)))
-            T = 0.7
-            sharpened = probas ** (1 / T)
-            sharpened = sharpened / sharpened.sum()
-            top3_indices = sharpened.argsort()[-3:][::-1]
-            top3 = [
-                {"sport": classes[i], "confidence": round(float(sharpened[i]) * 100, 1)}
-                for i in top3_indices
-            ]
-        except AttributeError:
-            top3 = [{"sport": sport_name, "confidence": None}]
-
-        return {"predicted_sport": sport_name, "top3": top3}
-
-    except ValueError as e:
-        raise HTTPException(status_code=422, detail=f"Invalid input: {str(e)}")
+    except KeyError as e:
+        raise HTTPException(status_code=422, detail=f"Missing feature: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")

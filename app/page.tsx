@@ -3,10 +3,10 @@
 import { useState } from "react";
 import MetricForm from "@/components/MetricForm";
 import ResultsPanel from "@/components/ResultsPanel";
-import { FastAPIResult } from "@/types";
+import { PredictionResult } from "@/types";
 
 export default function Home() {
-  const [result, setResult] = useState<FastAPIResult | null>(null);
+  const [result, setResult] = useState<PredictionResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,7 +34,7 @@ export default function Home() {
         throw new Error(data.error ?? "Request failed");
       }
 
-      const data: FastAPIResult = await res.json();
+      const data: PredictionResult = await res.json();
       setResult(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Make sure the prediction service is running.");
